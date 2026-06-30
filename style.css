@@ -214,7 +214,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .hero-bg {
   position: absolute; inset: -4%; z-index: -2;
-  background: var(--navy) url("hero-background.jpg") center / cover no-repeat;
+  background: var(--navy) url("hero-background.jpeg") center / cover no-repeat;
   transform: scale(1.12);
   animation: heroZoom 18s ease-out forwards;
 }
@@ -264,8 +264,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 @keyframes ekgPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
 /* ---------- Reveal animation ---------- */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
-.reveal.in { opacity: 1; transform: none; }
+/* Hidden state only applies when JS is active. If JS is unavailable or fails
+   to load, .reveal elements stay fully visible by default. */
+html.js .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+html.js .reveal.in { opacity: 1; transform: none; }
 /* Hero reveals stagger */
 .hero .reveal { transition-delay: 0.05s; }
 .hero .reveal:nth-child(2) { transition-delay: 0.18s; }
@@ -607,7 +609,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   }
   .hero-bg { transform: scale(1); animation: none; }
   .navbar { transform: none; animation: none; }
-  .reveal { opacity: 1; transform: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
   .ekg-line { stroke-dashoffset: 0; animation: none; }
   .wa-float { animation: none; }
 }
