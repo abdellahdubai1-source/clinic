@@ -5,6 +5,10 @@
 (function () {
   "use strict";
 
+  // Mark that JS is active so the CSS hidden-state for .reveal applies.
+  // (If this script never runs, .reveal elements remain visible by default.)
+  document.documentElement.classList.add("js");
+
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- Footer year ---------- */
@@ -65,8 +69,22 @@
 
   /* ---------- Scroll reveal (Intersection Observer) ---------- */
   const revealEls = document.querySelectorAll(".reveal");
+  const showReveal = (el) => el.classList.add("in");
+
+  // Reveal anything already within (or near) the viewport. This fixes elements
+  // that the observer's threshold/rootMargin can skip on tall desktop layouts,
+  // so no text or image stays hidden if the user never scrolls past it.
+  const revealInView = () => {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    revealEls.forEach((el) => {
+      if (el.classList.contains("in")) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < vh + 120 && r.bottom > -120) showReveal(el);
+    });
+  };
+
   if (prefersReduced || !("IntersectionObserver" in window)) {
-    revealEls.forEach((el) => el.classList.add("in"));
+    revealEls.forEach(showReveal);
   } else {
     const revealObserver = new IntersectionObserver(
       (entries, obs) => {
@@ -74,7 +92,7 @@
           if (entry.isIntersecting) {
             // light stagger for grouped items
             const delay = Math.min(i * 70, 280);
-            setTimeout(() => entry.target.classList.add("in"), delay);
+            setTimeout(() => showReveal(entry.target), delay);
             obs.unobserve(entry.target);
           }
         });
@@ -82,6 +100,17 @@
       { threshold: 0.14, rootMargin: "0px 0px -60px 0px" }
     );
     revealEls.forEach((el) => revealObserver.observe(el));
+
+    // Immediately reveal whatever is already on screen (above-the-fold + dead zones).
+    revealInView();
+    // Re-check after full load and on resize (font/layout shifts, desktop widths).
+    window.addEventListener("load", revealInView);
+    window.addEventListener("resize", revealInView, { passive: true });
+
+    // Safety net: if the observer ever stalls, make sure nothing stays hidden.
+    window.addEventListener("load", () => {
+      setTimeout(() => revealEls.forEach(showReveal), 2500);
+    });
   }
 
   /* ---------- Animated stat counters ---------- */
