@@ -35,6 +35,19 @@
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 
+  <!-- Reveal-animation safety: flag JS early to avoid any flash, and guarantee
+       every animated element becomes visible after load even if scripts fail. -->
+  <script>
+    document.documentElement.classList.add("js");
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        document.querySelectorAll(".reveal:not(.in)").forEach(function (el) {
+          el.classList.add("in");
+        });
+      }, 2500);
+    });
+  </script>
+
   <!-- Structured data -->
   <script type="application/ld+json">
   {
